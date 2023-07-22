@@ -1,0 +1,9 @@
+MODELS_PATH: "./harmonization_exps/models"
+EXPS_PATH: "./harmonization_exps"
+
+HFLICKR_PATH: "/data1/liguanlin/Datasets/iHarmony/HFlickr"
+HDAY2NIGHT_PATH: "/data1/liguanlin/Datasets/iHarmony/Hday2night"
+HCOCO_PATH: "/data1/liguanlin/Datasets/iHarmony/HCOCO"
+HADOBE5K_1024_PATH: "/data1/liguanlin/Datasets/iHarmony/HAdobe5k_1024"
+HADOBE5K_PATH: "/data1/liguanlin/Datasets/iHarmony/HAdobe5k"
+HADOBE5K_RS_PATH: "/data1/liguanlin/Datasets/iHarmony/HAdobe5k"
