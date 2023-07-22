@@ -8,6 +8,7 @@ from iharm.model.modeling.conv_autoencoder import ConvEncoder, DeconvDecoderUpsa
 from iharm.model.modeling.unet import UNetEncoder, UNetDecoderUpsample
 from iharm.model.modeling.vit_base import ViT_Harmonizer
 from iharm.model.pct_functions import PCT
+from iharm.model.modeling.NAFNet_arch import NAFNet
 
 class PCTNet(nn.Module):
     
@@ -58,7 +59,18 @@ class PCTNet(nn.Module):
             )
             input_dim=32
         elif backbone_type == 'ViT':
-            self.encoder = ViT_Harmonizer(output_nc=input_dim)
+            #self.encoder = ViT_Harmonizer(output_nc=input_dim)
+            img_channel = 4
+            width = 32 #初始设置为32
+
+            enc_blks = [1, 1, 1, 28]
+            middle_blk_num = 1
+            dec_blks = [1, 1, 1, 1]
+            """
+            self.nafnet = NAFNet_arch.NAFNet(img_channel=img_channel, width=width, middle_blk_num=middle_blk_num,
+                            enc_blk_nums=enc_blks, dec_blk_nums=dec_blks)
+            """    
+            self.encoder = NAFNet(img_channel=img_channel, out_channel=input_dim, width=width, middle_blk_num=middle_blk_num, enc_blk_nums=enc_blks, dec_blk_nums=dec_blks)
             self.decoder = lambda intermediates, img, mask: (intermediates, mask)
 
         self.get_params = nn.Conv2d(input_dim, self.out_dim, kernel_size=1)
