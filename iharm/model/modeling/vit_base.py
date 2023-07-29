@@ -1,6 +1,7 @@
 from einops.layers.torch import Rearrange
 from torch import nn
 import math
+import torch
 
 class ViT_Harmonizer(nn.Module):
     def __init__(self, output_nc, ksize=4, tr_r_enc_head=2, tr_r_enc_layers=9, input_nc=3, dim_forward=2, tr_act='gelu'):
@@ -22,3 +23,14 @@ class ViT_Harmonizer(nn.Module):
         bs, L, C  = patch_embedding.size()
         harmonized = self.dec(content.permute(1,2,0).view(bs, C, int(math.sqrt(L)), int(math.sqrt(L))))
         return harmonized
+
+
+
+if __name__ == '__main__':
+
+    net = ViT_Harmonizer(output_nc=12).cuda()
+    inp_shape = (3, 256, 256)
+
+    inp_img = torch.randn(1, 4, 256, 256).cuda()
+    output = net(inp_img)
+    print(output.shape)

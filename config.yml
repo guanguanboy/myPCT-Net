@@ -1,5 +1,5 @@
-MODELS_PATH: "./harmonization_exps/models"
-EXPS_PATH: "./harmonization_exps"
+MODELS_PATH: "./harmonization_naf_exps/models"
+EXPS_PATH: "./harmonization_naf_exps"
 
 HFLICKR_PATH: "/data1/liguanlin/Datasets/iHarmony/HFlickr"
 HDAY2NIGHT_PATH: "/data1/liguanlin/Datasets/iHarmony/Hday2night"

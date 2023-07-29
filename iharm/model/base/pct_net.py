@@ -9,6 +9,7 @@ from iharm.model.modeling.unet import UNetEncoder, UNetDecoderUpsample
 from iharm.model.modeling.vit_base import ViT_Harmonizer
 from iharm.model.pct_functions import PCT
 from iharm.model.modeling.NAFNet_arch import NAFNet
+from iharm.model.modeling.SPANET_arch import SPANet
 
 class PCTNet(nn.Module):
     
@@ -70,7 +71,12 @@ class PCTNet(nn.Module):
             self.nafnet = NAFNet_arch.NAFNet(img_channel=img_channel, width=width, middle_blk_num=middle_blk_num,
                             enc_blk_nums=enc_blks, dec_blk_nums=dec_blks)
             """    
-            self.encoder = NAFNet(img_channel=img_channel, out_channel=input_dim, width=width, middle_blk_num=middle_blk_num, enc_blk_nums=enc_blks, dec_blk_nums=dec_blks)
+            #self.encoder = NAFNet(img_channel=img_channel, out_channel=input_dim, width=width, #middle_blk_num=middle_blk_num, enc_blk_nums=enc_blks, dec_blk_nums=dec_blks)
+
+            input_size = 256
+            depths=[1, 1, 1, 1, 28, 1, 1, 1, 1]            
+            self.encoder = SPANet(img_size=input_size, in_chans=3, dd_in=4, embed_dim=32,depths=depths, win_size=8, mlp_ratio=4., token_projection='linear', token_mlp='leff', modulator=True, shift_flag=False)
+            
             self.decoder = lambda intermediates, img, mask: (intermediates, mask)
 
         self.get_params = nn.Conv2d(input_dim, self.out_dim, kernel_size=1)
@@ -83,11 +89,11 @@ class PCTNet(nn.Module):
         # Low resolution branch
         x = torch.cat((image, mask), dim=1)
         
-        intermediates = self.encoder(x, backbone_features)
-        latent, attention_map = self.decoder(intermediates, image, mask) # (N, 32, 256, 256), (N, 1, 256, 256)
-        params = self.get_params(latent)
+        intermediates = self.encoder(x, backbone_features) # intermediates ([1, 12, 256, 256])
+        latent, attention_map = self.decoder(intermediates, image, mask) # (1, 12, 256, 256), (1, 1, 256, 256)
+        params = self.get_params(latent) #通过一个卷积将从网络得到的latent转换为params. ([1, 12, 256, 256])
 
-        output_lowres = self.PCT(image, params)
+        output_lowres = self.PCT(image, params) #(1, 12, 256, 256)
 
         if self.use_attn:
             output_lowres = output_lowres * attention_map + image * (1-attention_map)
@@ -115,7 +121,7 @@ class PCTNet(nn.Module):
         for id, fr_img, fr_mask in zip(idx, fr_imgs, fr_masks):
             H = fr_img.size(2)
             W = fr_img.size(3)
-            params_fullres = F.interpolate(params[id], size=(H, W), mode='bicubic')
+            params_fullres = F.interpolate(params[id], size=(H, W), mode='bicubic') #torch.Size([1, 12, 580, 400])
             output_fullres = self.PCT(fr_img, params_fullres)
             if self.use_attn:
                 attention_map_fullres = F.interpolate(attention_map[id], size=(H, W), mode='bicubic')
